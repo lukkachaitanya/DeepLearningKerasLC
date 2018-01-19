@@ -96,3 +96,4 @@ faces cropped from your photos, and the `*.photoslibrary/database/Person.db` and
 `*.photoslibrary/database/ImageProxies.apdb` sqlite3 databases describe the correspondence
 between persons and cropped photos. The relevant tables for our purposes are
 `Person.RKFace`, `Person.RKPerson`, and `ImageProxies.RKModelResource`.
+# DeepLearningKerasLC

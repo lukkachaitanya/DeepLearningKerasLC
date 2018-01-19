@@ -19,7 +19,7 @@ def build_model(nb_classes):
     predictions = Dense(nb_classes, activation='softmax')(x)
 
     # this is the model we will train
-    model = Model(input=base_model.input, output=predictions)
+    model = Model(inputs=base_model.input, outputs=predictions)
 
     # first: train only the top layers (which were randomly initialized)
     # i.e. freeze all convolutional InceptionV3 layers
@@ -27,9 +27,9 @@ def build_model(nb_classes):
         layer.trainable = False
 
     # compile the model (should be done *after* setting layers to non-trainable)
-    print "starting model compile"
+    print ("starting model compile")
     compile(model)
-    print "model compile done"
+    print ("model compile done")
     return model
 
 

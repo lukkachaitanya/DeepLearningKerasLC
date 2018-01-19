@@ -17,14 +17,14 @@ n = 224
 
 model_prefix, = sys.argv[1:]
 
-print "loading neural network"
+print ("loading neural network")
 model, tags = net.load(model_prefix)
 net.compile(model)
-print "done"
+print ("done")
 
-print "compiling predictor function" # to avoid the delay during video capture.
+print ("compiling predictor function") # to avoid the delay during video capture.
 _ = model.predict(np.zeros((1, 3, n, n), dtype=np.float32), batch_size=1)
-print "done"
+print ("done")
 
 cascade_filename = "haarcascade_frontalface_default.xml"
 assert os.path.isfile(cascade_filename), "face detector model haarcascade_frontalface_default.xml must be in the current directory"
@@ -60,7 +60,7 @@ while True:
 
             probabilities = model.predict(square, batch_size=1).flatten()
             prediction = tags[np.argmax(probabilities)]
-            print prediction + "\t" + "\t".join(map(lambda x: "%.2f" % x, probabilities))
+            print (prediction + "\t" + "\t".join(map(lambda x: "%.2f" % x, probabilities)))
             cv2.putText(frameOut, prediction, (x, y-2), font, 1, (255,255,255), 2)
 
     # Display the resulting frame

@@ -13,6 +13,8 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import SGD
 from keras import backend as K
 from keras.utils import np_utils
+from keras import backend
+backend.set_image_dim_ordering('tf')
 
 import dataset
 import net
@@ -21,18 +23,19 @@ np.random.seed(1337)
 
 n = 224
 batch_size = 128
-nb_epoch = 20
-nb_phase_two_epoch = 20
+nb_epoch = 2
+nb_phase_two_epoch = 2
 # Use heavy augmentation if you plan to use the model with the
 # accompanying webcam.py app, because webcam data is quite different from photos.
-heavy_augmentation = True
+heavy_augmentation = False
 
 data_directory, model_file_prefix = sys.argv[1:]
 
-print "loading dataset"
+print ("loading dataset")
 
 X, y, tags = dataset.dataset(data_directory, n)
 nb_classes = len(tags)
+
 
 
 sample_count = len(y)
@@ -80,17 +83,17 @@ def evaluate(model, vis_filename=None):
     y_pred = np.argmax(Y_pred, axis=1)
 
     accuracy = float(np.sum(y_test==y_pred)) / len(y_test)
-    print "accuracy:", accuracy
+    print("accuracy:", accuracy)
     
     confusion = np.zeros((nb_classes, nb_classes), dtype=np.int32)
     for (predicted_index, actual_index, image) in zip(y_pred, y_test, X_test):
         confusion[predicted_index, actual_index] += 1
     
-    print "rows are predicted classes, columns are actual classes"
+    print ("rows are predicted classes, columns are actual classes")
     for predicted_index, predicted_tag in enumerate(tags):
-        print predicted_tag[:7],
+        print (predicted_tag[:7],)
         for actual_index, actual_tag in enumerate(tags):
-            print "\t%d" % confusion[predicted_index, actual_index],
+            print ("\t%d" % confusion[predicted_index, actual_index],)
         print
     if vis_filename is not None:
         bucket_size = 10
@@ -116,20 +119,20 @@ def evaluate(model, vis_filename=None):
         vis_image[:, ::image_size * bucket_size] = 0
         scipy.misc.imsave(vis_filename, vis_image)
 
-print "loading original inception model"
+print ("loading original inception model")
 
 model = net.build_model(nb_classes)
 model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=["accuracy"])
 
 # train the model on the new data for a few epochs
 
-print "training the newly added dense layers"
-
+print ("training the newly added dense layers")
+print(X_test.shape)
 model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size, shuffle=True),
-            samples_per_epoch=X_train.shape[0],
-            nb_epoch=nb_epoch,
+            steps_per_epoch=X_train.shape[0],
+            epochs=nb_epoch,
             validation_data=datagen.flow(X_test, Y_test, batch_size=batch_size),
-            nb_val_samples=X_test.shape[0],
+            validation_steps=X_test.shape[0],
             )
 
 evaluate(model, "000.png")
@@ -149,20 +152,20 @@ for layer in model.layers[172:]:
 
 # we need to recompile the model for these modifications to take effect
 # we use SGD with a low learning rate
-model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), loss='categorical_crossentropy', metrics=["accuracy"])
+model.compile(optimizer=SGD(lr=0.01, momentum=0.9), loss='categorical_crossentropy', metrics=["accuracy"])
 
 # we train our model again (this time fine-tuning the top 2 inception blocks
 # alongside the top Dense layers
 
-print "fine-tuning top 2 inception blocks alongside the top dense layers"
+print("fine-tuning top 2 inception blocks alongside the top dense layers")
 
 for i in range(1,11):
-    print "mega-epoch %d/10" % i
+    print ("mega-epoch %d/10" % i)
     model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size, shuffle=True),
-            samples_per_epoch=X_train.shape[0],
-            nb_epoch=nb_phase_two_epoch,
+            steps_per_epoch=X_train.shape[0],
+            epochs=nb_phase_two_epoch,
             validation_data=datagen.flow(X_test, Y_test, batch_size=batch_size),
-            nb_val_samples=X_test.shape[0],
+            validation_steps=X_test.shape[0],
             )
 
     evaluate(model, str(i).zfill(3)+".png")

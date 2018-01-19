@@ -57,20 +57,22 @@ def dataset(base_dir, n):
             X.append(img)
             y.append(class_index)
             useful_image_count += 1
-    print "processed %d, used %d" % (processed_image_count, useful_image_count)
+    print ("processed %d, used %d" % (processed_image_count, useful_image_count))
 
     X = np.array(X).astype(np.float32)
-    X = X.transpose((0, 3, 1, 2))
+    print(X.shape)
+    #X = X.transpose((0, 3, 1, 2))
     X = preprocess_input(X)
     y = np.array(y)
+    print(X.shape)
 
     perm = np.random.permutation(len(y))
     X = X[perm]
     y = y[perm]
 
-    print "classes:"
+    print ("classes:")
     for class_index, class_name in enumerate(tags):
-        print class_name, sum(y==class_index)
+        print (class_name, sum(y==class_index))
     print
 
     return X, y, tags
@@ -79,7 +81,7 @@ def dataset(base_dir, n):
 def main():
     in_prefix, n = sys.argv[1:]
     X, y, tags = dataset(sys.stdin, in_prefix, n)
-    print X.shape
+    print (X.shape)
 
 
 if __name__ == "__main__":
